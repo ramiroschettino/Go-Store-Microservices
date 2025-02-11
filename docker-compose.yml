@@ -1,0 +1,32 @@
+services:
+  warehouse-db:
+    image: postgres:15
+    container_name: warehouse_db
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: warehouse
+      DB_DSN: "host=warehouse-db user=admin password=admin123 dbname=warehouse port=5432 sslmode=disable"
+    ports:
+      - "5433:5432"
+    volumes:
+      - warehouse_pgdata:/var/lib/postgresql/data
+
+  checkout-db:
+    image: postgres:15
+    container_name: checkout_db
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: checkout
+      DB_DSN: "host=checkout-db user=admin password=admin123 dbname=checkout port=5432 sslmode=disable"
+    ports:
+      - "5434:5432"
+    volumes:
+      - checkout_pgdata:/var/lib/postgresql/data
+
+volumes:
+  warehouse_pgdata:
+  checkout_pgdata:
