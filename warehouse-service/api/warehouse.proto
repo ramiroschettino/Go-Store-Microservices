@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package warehouse;
+
+service WarehouseService {
+    rpc CheckStock(CheckStockRequest) returns (CheckStockResponse);
+    rpc LockStock(LockStockRequest) returns (LockStockResponse);
+}
+
+message CheckStockRequest {
+    int32 product_id = 1;
+}
+
+message CheckStockResponse {
+    bool available = 1;
+    int32 quantity = 2;
+}
+
+message LockStockRequest {
+    int32 product_id = 1;
+    int32 quantity = 2;
+}
+
+message LockStockResponse {
+    bool success = 1;
+}

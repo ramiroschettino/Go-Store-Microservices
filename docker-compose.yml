@@ -1,32 +1,69 @@
+version: '3.8'
+
 services:
   warehouse-db:
     image: postgres:15
     container_name: warehouse_db
     restart: always
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin123
-      POSTGRES_DB: warehouse
-      DB_DSN: "host=warehouse-db user=admin password=admin123 dbname=warehouse port=5432 sslmode=disable"
+      POSTGRES_USER: ${WAREHOUSE_DB_USER}
+      POSTGRES_PASSWORD: ${WAREHOUSE_DB_PASSWORD}
+      POSTGRES_DB: ${WAREHOUSE_DB_NAME}
     ports:
       - "5433:5432"
     volumes:
       - warehouse_pgdata:/var/lib/postgresql/data
+    networks:
+      - warehouse-network
 
   checkout-db:
     image: postgres:15
     container_name: checkout_db
     restart: always
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin123
-      POSTGRES_DB: checkout
-      DB_DSN: "host=checkout-db user=admin password=admin123 dbname=checkout port=5432 sslmode=disable"
+      POSTGRES_USER: ${CHECKOUT_DB_USER}
+      POSTGRES_PASSWORD: ${CHECKOUT_DB_PASSWORD}
+      POSTGRES_DB: ${CHECKOUT_DB_NAME}
     ports:
       - "5434:5432"
     volumes:
       - checkout_pgdata:/var/lib/postgresql/data
+    networks:
+      - checkout-network
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - warehouse-network
+      - checkout-network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - warehouse-network
+      - checkout-network
 
 volumes:
   warehouse_pgdata:
   checkout_pgdata:
+  redis_data:
+  elasticsearch_data:
+
+networks:
+  warehouse-network:
+  checkout-network:
