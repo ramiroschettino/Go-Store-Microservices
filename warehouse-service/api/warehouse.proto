@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package warehouse;
 
-option go_package = "./";
+option go_package = "github.com/ramiroschettino/Go-Store-Microservices/warehouse-service/api";
 
 service WarehouseService {
     rpc CheckAndBlockStock(StockRequest) returns (StockResponse);

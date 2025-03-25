@@ -2,63 +2,117 @@ package grpc
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"log"
 	"net"
+	"time"
 
 	pb "github.com/ramiroschettino/Go-Store-Microservices/warehouse-service/api"
-
+	"github.com/ramiroschettino/Go-Store-Microservices/warehouse-service/internal/application"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
-type server struct {
+type Server struct {
 	pb.UnimplementedWarehouseServiceServer
+	warehouseService application.WarehouseService
 }
 
-// Implementa el método CheckAndBlockStock
-func (s *server) CheckAndBlockStock(ctx context.Context, req *pb.StockRequest) (*pb.StockResponse, error) {
-	// Aquí va la lógica de tu servicio, como bloquear el stock
-	fmt.Printf("Verificando stock para el producto: %s, cantidad: %d\n", req.ProductId, req.Quantity)
+func NewServer(warehouseService application.WarehouseService) *Server {
+	return &Server{
+		warehouseService: warehouseService,
+	}
+}
 
-	// Simulación de respuesta
+func (s *Server) CheckAndBlockStock(ctx context.Context, req *pb.StockRequest) (*pb.StockResponse, error) {
+	// Validación de entrada
+	if req.GetProductId() == "" || req.GetQuantity() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "product_id y quantity son requeridos")
+	}
+
+	// Timeout context
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
+	// Llamada al servicio de aplicación
+	available, err := s.warehouseService.CheckAndBlockStock(ctx, req.GetProductId(), int(req.GetQuantity()))
+	if err != nil {
+		if errors.Is(err, application.ErrInsufficientStock) {
+			return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+		}
+		return nil, status.Errorf(codes.Internal, "error al verificar stock: %v", err)
+	}
+
 	return &pb.StockResponse{
 		Success:           true,
-		AvailableQuantity: 100, // Esto lo puedes cambiar según la lógica
-		Message:           "Stock verificado y bloqueado correctamente.",
+		AvailableQuantity: int32(available),
+		Message:           "Stock reservado exitosamente",
 	}, nil
 }
 
-// Implementa el método UpdateStock
-func (s *server) UpdateStock(ctx context.Context, req *pb.UpdateStockRequest) (*pb.StockResponse, error) {
-	// Lógica para actualizar el stock
-	fmt.Printf("Actualizando stock para el producto: %s, cantidad a restar: %d\n", req.ProductId, req.QuantityToDeduct)
+func (s *Server) UpdateStock(ctx context.Context, req *pb.UpdateStockRequest) (*pb.StockResponse, error) {
+	// Validación de entrada
+	if req.GetProductId() == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "product_id es requerido")
+	}
 
-	// Simulación de respuesta
+	// Timeout context
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
+	// Llamada al servicio de aplicación
+	available, err := s.warehouseService.UpdateStock(
+		ctx,
+		req.GetProductId(),
+		int(req.GetQuantityToDeduct()),
+		req.GetRevert(),
+	)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error al actualizar stock: %v", err)
+	}
+
 	return &pb.StockResponse{
 		Success:           true,
-		AvailableQuantity: 50, // Esto lo puedes cambiar según la lógica
-		Message:           "Stock actualizado correctamente.",
+		AvailableQuantity: int32(available),
+		Message:           "Stock actualizado exitosamente",
 	}, nil
 }
 
-// Función para iniciar el servidor gRPC
-func StartGRPCServer() {
-	// Establece el puerto donde se escuchará el servidor gRPC
-	port := ":50051"
+func StartGRPCServer(port string, warehouseService application.WarehouseService) {
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
-		log.Fatalf("Failed to listen: %v", err)
+		log.Fatalf("failed to listen: %v", err)
 	}
 
-	// Crea un servidor gRPC
-	s := grpc.NewServer()
+	s := grpc.NewServer(
+		grpc.UnaryInterceptor(loggingInterceptor),
+	)
 
-	// Registra el servidor con los métodos definidos
-	pb.RegisterWarehouseServiceServer(s, &server{})
+	pb.RegisterWarehouseServiceServer(s, NewServer(warehouseService))
 
-	// Inicia el servidor gRPC
-	log.Printf("Servidor gRPC corriendo en %s", port)
+	log.Printf("Servidor gRPC iniciado en %s", port)
 	if err := s.Serve(lis); err != nil {
-		log.Fatalf("Failed to serve: %v", err)
+		log.Fatalf("failed to serve: %v", err)
 	}
+}
+
+func loggingInterceptor(
+	ctx context.Context,
+	req interface{},
+	info *grpc.UnaryServerInfo,
+	handler grpc.UnaryHandler,
+) (resp interface{}, err error) {
+	start := time.Now()
+
+	log.Printf("Iniciando llamada: %s", info.FullMethod)
+	
+	resp, err = handler(ctx, req)
+	
+	log.Printf("Llamada completada: %s, Duración: %v, Error: %v", 
+		info.FullMethod, 
+		time.Since(start), 
+		err)
+
+	return resp, err
 }
