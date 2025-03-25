@@ -2,25 +2,26 @@ syntax = "proto3";
 
 package warehouse;
 
+option go_package = "./";
+
 service WarehouseService {
-    rpc CheckStock(CheckStockRequest) returns (CheckStockResponse);
-    rpc LockStock(LockStockRequest) returns (LockStockResponse);
+    rpc CheckAndBlockStock(StockRequest) returns (StockResponse);
+    rpc UpdateStock(UpdateStockRequest) returns (StockResponse);
 }
 
-message CheckStockRequest {
-    int32 product_id = 1;
-}
-
-message CheckStockResponse {
-    bool available = 1;
+message StockRequest {
+    string product_id = 1;
     int32 quantity = 2;
 }
 
-message LockStockRequest {
-    int32 product_id = 1;
-    int32 quantity = 2;
+message UpdateStockRequest {
+    string product_id = 1;
+    int32 quantity_to_deduct = 2;
+    bool revert = 3;
 }
 
-message LockStockResponse {
+message StockResponse {
     bool success = 1;
+    int32 available_quantity = 2;
+    string message = 3;
 }
