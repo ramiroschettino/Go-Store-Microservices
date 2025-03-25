@@ -1,0 +1,76 @@
+Listado de rutas de carpetas para el volumen Windows
+El número de serie del volumen es B824-833F
+C:.
+|   .env
+|   docker-compose.yml
+|   estructura.txt
+|   go.mod
+|   README.md
+|   
++---checkout-service
+|   |   go.mod
+|   |   go.sum
+|   |   
+|   +---api
+|   |       checkout.proto
+|   |       
+|   +---cmd
+|   |   \---checkout-service
+|   |           main.go
+|   |           
+|   +---internal
+|   |   +---application
+|   |   |       .gitkeep
+|   |   |       
+|   |   +---domain
+|   |   |       cart.go
+|   |   |       order.go
+|   |   |       payment.go
+|   |   |       
+|   |   \---infrastructure
+|   |       \---db
+|   |               database.go
+|   |               
+|   \---pkg
+|       \---checkout
+|               .gitkeep
+|               
+\---warehouse-service
+    |   go.mod
+    |   go.sum
+    |   
+    +---api
+    |       warehouse.pb.go
+    |       warehouse.proto
+    |       warehouse_grpc.pb.go
+    |       
+    +---cmd
+    |   \---warehouse-service
+    |           main.go
+    |           
+    +---internal
+    |   +---application
+    |   |       .gitkeep
+    |   |       
+    |   +---domain
+    |   |       product.go
+    |   |       product_repository.go
+    |   |       stock-movement.go
+    |   |       stock_movement_repository.go
+    |   |       warehouse.go
+    |   |       warehouse_repository.go
+    |   |       
+    |   \---infrastructure
+    |       +---db
+    |       |       database.go
+    |       |       
+    |       +---grpc
+    |       |       warehouse-server.go
+    |       |       
+    |       \---repository
+    |               warehouse_repository_impl.go
+    |               
+    \---pkg
+        \---warehouse
+                .gitkeep
+                

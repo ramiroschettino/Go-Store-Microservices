@@ -13,6 +13,11 @@ services:
       - "5433:5432"
     volumes:
       - warehouse_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${WAREHOUSE_DB_USER} -d ${WAREHOUSE_DB_NAME}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     networks:
       - microservices-network
 
@@ -28,31 +33,45 @@ services:
       - "5434:5432"
     volumes:
       - checkout_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${CHECKOUT_DB_USER} -d ${CHECKOUT_DB_NAME}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     networks:
       - microservices-network
 
   redis:
-    image: redis:alpine
+    image: redis:7.0-alpine
     container_name: redis
     restart: always
     ports:
       - "6379:6379"
+    command: redis-server --save 60 1 --loglevel warning
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
     networks:
       - microservices-network
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
     container_name: elasticsearch
     environment:
       - discovery.type=single-node
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
     ports:
       - "9200:9200"
-      - "9300:9300"
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
     networks:
       - microservices-network
 
@@ -64,34 +83,60 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - warehouse-service
-      - checkout-service
+      warehouse-service:
+        condition: service_healthy
+      checkout-service:
+        condition: service_healthy
     networks:
       - microservices-network
 
   warehouse-service:
     build: ./warehouse-service
     container_name: warehouse_service
+    environment:
+      DB_HOST: warehouse-db
+      DB_PORT: 5432
+      REDIS_HOST: redis
+      ELASTICSEARCH_HOST: elasticsearch
+      GRPC_PORT: 50051
     depends_on:
-      - warehouse-db
-      - redis
-      - elasticsearch
+      warehouse-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    ports:
+      - "50051:50051"
+    healthcheck:
+      test: ["CMD", "grpc_health_probe", "-addr=:50051"]
+      interval: 10s
+      timeout: 2s
     networks:
       - microservices-network
-    ports:
-      - "50051:50051" 
 
   checkout-service:
     build: ./checkout-service
     container_name: checkout_service
+    environment:
+      DB_HOST: checkout-db
+      DB_PORT: 5432
+      REDIS_HOST: redis
+      WAREHOUSE_SERVICE_URL: warehouse-service:50051
+      GRPC_PORT: 50052
     depends_on:
-      - checkout-db
-      - redis
-      - elasticsearch
+      checkout-db:
+        condition: service_healthy
+      warehouse-service:
+        condition: service_healthy
+    ports:
+      - "50052:50052"
+    healthcheck:
+      test: ["CMD", "grpc_health_probe", "-addr=:50052"]
+      interval: 10s
+      timeout: 2s
     networks:
       - microservices-network
-    ports:
-      - "50052:50052" 
 
 volumes:
   warehouse_pgdata:
@@ -101,3 +146,4 @@ volumes:
 
 networks:
   microservices-network:
+    driver: bridge

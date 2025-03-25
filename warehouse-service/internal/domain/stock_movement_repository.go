@@ -1,9 +1,13 @@
 package domain
 
+import "context"
+
 type StockMovementRepository interface {
-	GetById(id uint) (*StockMovement, error)
-	GetAll() ([]StockMovement, error)
-	Create(movement *StockMovement) error
-	Update(movement *StockMovement) error
-	Delete(id uint) error
+	GetByID(ctx context.Context, id uint) (*StockMovement, error)
+	GetAll(ctx context.Context) ([]StockMovement, error)
+	Create(ctx context.Context, movement *StockMovement) error
+	Update(ctx context.Context, movement *StockMovement) error
+	Delete(ctx context.Context, id uint) error
+	GetMovementsByProduct(ctx context.Context, productID uint) ([]StockMovement, error)
+	GetCurrentStock(ctx context.Context, productID uint) (int, error)
 }

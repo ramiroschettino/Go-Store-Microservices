@@ -2,7 +2,8 @@ package main
 
 import (
 	"log"
-	"warehouse-service/internal/infrastructure/grpc"
+
+	"github.com/ramiroschettino/Go-Store-Microservices/warehouse-service/internal/infrastructure/grpc"
 )
 
 func main() {

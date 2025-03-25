@@ -1,9 +1,13 @@
 package domain
 
+import "context"
+
 type WarehouseRepository interface {
-	GetByID(id uint) (*Warehouse, error)
-	GetAll() ([]Warehouse, error)
-	Create(warehouse *Warehouse) error
-	Update(warehouse *Warehouse) error
-	Delete(id uint) error
+	GetByID(ctx context.Context, id uint) (*Warehouse, error)
+	GetAll(ctx context.Context) ([]Warehouse, error)
+	Create(ctx context.Context, warehouse *Warehouse) error
+	Update(ctx context.Context, warehouse *Warehouse) error
+	Delete(ctx context.Context, id uint) error
+	// Métodos específicos
+	GetByLocation(ctx context.Context, location string) (*Warehouse, error)
 }

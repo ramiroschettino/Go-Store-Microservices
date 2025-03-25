@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net"
-	pb "warehouse-service/api" // Importa los archivos generados
+
+	pb "github.com/ramiroschettino/Go-Store-Microservices/warehouse-service/api"
 
 	"google.golang.org/grpc"
 )
