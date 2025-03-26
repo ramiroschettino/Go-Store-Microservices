@@ -1,43 +1,31 @@
 package main
 
 import (
-	"context"
+	"auth-service/internal/application"
+	"auth-service/internal/infrastructure/db"
+	"auth-service/internal/infrastructure/repository"
 	"log"
-	"net"
-
-	"tu-proyecto/auth-service/internal/auth"
-	pb "tu-proyecto/auth-service/internal/proto"
-
-	"google.golang.org/grpc"
+	"os"
 )
 
-type server struct {
-	pb.UnimplementedAuthServiceServer
-}
-
-func (s *server) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
-	// Aquí validarías usuario/contraseña contra tu DB
-	token, err := auth.GenerateToken("usuario123") // Cambia esto!
-	return &pb.LoginResponse{Token: token}, err
-}
-
-func (s *server) Validate(ctx context.Context, req *pb.ValidateRequest) (*pb.ValidateResponse, error) {
-	userID, err := auth.ValidateToken(req.Token)
-	return &pb.ValidateResponse{
-		Valid:  err == nil,
-		UserId: userID,
-	}, nil
-}
-
 func main() {
-	lis, err := net.Listen("tcp", ":50053")
+	// Configuración
+	dsn := os.Getenv("DB_DSN")
+	jwtSecret := os.Getenv("JWT_SECRET")
+
+	// Database
+	dbConn, err := db.NewPostgresDB(dsn)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to connect to database: %v", err)
 	}
-	s := grpc.NewServer()
-	pb.RegisterAuthServiceServer(s, &server{})
-	log.Println("Auth service running on :50053")
-	if err := s.Serve(lis); err != nil {
-		log.Fatal(err)
-	}
+
+	// Repositorios
+	userRepo := repository.NewUserRepository(dbConn)
+	tokenRepo := repository.NewJWTRepository(jwtSecret)
+
+	// Servicio
+	authService := application.NewAuthService(userRepo, tokenRepo)
+
+	// Iniciar gRPC/HTTP server (implementar después)
+	log.Println("Auth service started successfully")
 }

@@ -1,22 +1,42 @@
-Listado de rutas de carpetas para el volumen Windows
-El número de serie del volumen es B824-833F
+Listado de rutas de carpetas
+El n£mero de serie del volumen es C2D7-9C5E
 C:.
 |   .env
 |   docker-compose.yml
-|   estructura_actual.txt
+|   estructura.txt
 |   README.md
 |   
 +---api-gateway
 |       nginx.conf
 |       
 +---auth-service
+|   |   go.mod
+|   |   go.sum
+|   |   
+|   +---api
+|   |       auth.proto
+|   |       
 |   +---cmd
 |   |       main.go
 |   |       
 |   \---internal
-|       \---auth
-|               jwt.go
-|               
+|       +---application
+|       |       service.go
+|       |       
+|       +---domain
+|       |       token.go
+|       |       token_repository.go
+|       |       user.go
+|       |       user_repository.go
+|       |       
+|       \---infrastructure
+|           +---db
+|           |       postgres.go
+|           |       
+|           \---repository
+|                   token_repository_impl.go
+|                   user_repository_impl.go
+|                   
 +---checkout-service
 |   |   go.mod
 |   |   go.sum
@@ -55,6 +75,35 @@ C:.
 |       \---checkout
 |               .gitkeep
 |               
++---user-service
+|   |   estructura.txt
+|   |   go.mod
+|   |   go.sum
+|   |   
+|   +---api
+|   |       user.pb.go
+|   |       user.proto
+|   |       user_grpc.pb.go
+|   |       
+|   +---cmd
+|   |       main.go
+|   |       
+|   \---internal
+|       +---application
+|       |       service.go
+|       |       service_test.go
+|       |       
+|       +---domain
+|       |       user.go
+|       |       user_repository.go
+|       |       
+|       \---infrastructure
+|           +---db
+|           |       postgres.go
+|           |       
+|           \---repository
+|                   user_repository_impl.go
+|                   
 \---warehouse-service
     |   go.mod
     |   go.sum

@@ -1,0 +1,31 @@
+Listado de rutas de carpetas
+El n£mero de serie del volumen es C2D7-9C5E
+C:.
+|   estructura.txt
+|   go.mod
+|   go.sum
+|   
++---api
+|       user.pb.go
+|       user.proto
+|       user_grpc.pb.go
+|       
++---cmd
+|       main.go
+|       
+\---internal
+    +---application
+    |       service.go
+    |       service_test.go
+    |       
+    +---domain
+    |       user.go
+    |       user_repository.go
+    |       
+    \---infrastructure
+        +---db
+        |       postgres.go
+        |       
+        \---repository
+                user_repository_impl.go
+                
