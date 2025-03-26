@@ -4,6 +4,7 @@ C:.
 |   .env
 |   docker-compose.yml
 |   estructura.txt
+|   init-db.sh
 |   README.md
 |   
 +---api-gateway
@@ -14,7 +15,9 @@ C:.
 |   |   go.sum
 |   |   
 |   +---api
+|   |       auth.pb.go
 |   |       auth.proto
+|   |       auth_grpc.pb.go
 |   |       
 |   +---cmd
 |   |       main.go
