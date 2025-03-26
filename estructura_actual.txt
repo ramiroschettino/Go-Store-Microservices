@@ -1,11 +1,22 @@
-Listado de rutas de carpetas
-El n£mero de serie del volumen es C2D7-9C5E
+Listado de rutas de carpetas para el volumen Windows
+El número de serie del volumen es B824-833F
 C:.
 |   .env
 |   docker-compose.yml
-|   estructura_completa.txt
+|   estructura_actual.txt
 |   README.md
 |   
++---api-gateway
+|       nginx.conf
+|       
++---auth-service
+|   +---cmd
+|   |       main.go
+|   |       
+|   \---internal
+|       \---auth
+|               jwt.go
+|               
 +---checkout-service
 |   |   go.mod
 |   |   go.sum
@@ -59,7 +70,7 @@ C:.
     |           
     +---internal
     |   +---application
-    |   |       .gitkeep
+    |   |       service.go
     |   |       
     |   +---domain
     |   |       product.go
@@ -70,16 +81,22 @@ C:.
     |   |       warehouse_repository.go
     |   |       
     |   \---infrastructure
+    |       +---cache
+    |       |       redis.go
+    |       |       
     |       +---db
     |       |       database.go
     |       |       
     |       +---grpc
     |       |       warehouse-server.go
     |       |       
-    |       \---repository
-    |               product_repository_impl.go
-    |               stock_movement_repository_impl.go
-    |               warehouse_repository_impl.go
+    |       +---repository
+    |       |       product_repository_impl.go
+    |       |       stock_movement_repository_impl.go
+    |       |       warehouse_repository_impl.go
+    |       |       
+    |       \---search
+    |               elastic.go
     |               
     \---pkg
         \---warehouse

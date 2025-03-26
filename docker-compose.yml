@@ -1,148 +1,146 @@
 version: '3.8'
 
 services:
+
   warehouse-db:
     image: postgres:15
-    container_name: warehouse_db
-    restart: always
     environment:
       POSTGRES_USER: ${WAREHOUSE_DB_USER}
       POSTGRES_PASSWORD: ${WAREHOUSE_DB_PASSWORD}
       POSTGRES_DB: ${WAREHOUSE_DB_NAME}
-    ports:
-      - "5433:5432"
-    volumes:
-      - warehouse_pgdata:/var/lib/postgresql/data
+    ports: ["5433:5432"]
+    volumes: [warehouse_pgdata:/var/lib/postgresql/data]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${WAREHOUSE_DB_USER} -d ${WAREHOUSE_DB_NAME}"]
       interval: 5s
       timeout: 3s
       retries: 5
-    networks:
-      - microservices-network
+    networks: [microservices-network]
 
   checkout-db:
     image: postgres:15
-    container_name: checkout_db
-    restart: always
     environment:
       POSTGRES_USER: ${CHECKOUT_DB_USER}
       POSTGRES_PASSWORD: ${CHECKOUT_DB_PASSWORD}
       POSTGRES_DB: ${CHECKOUT_DB_NAME}
-    ports:
-      - "5434:5432"
-    volumes:
-      - checkout_pgdata:/var/lib/postgresql/data
+    ports: ["5434:5432"]
+    volumes: [checkout_pgdata:/var/lib/postgresql/data]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${CHECKOUT_DB_USER} -d ${CHECKOUT_DB_NAME}"]
       interval: 5s
       timeout: 3s
       retries: 5
-    networks:
-      - microservices-network
+    networks: [microservices-network]
 
+  user-db:  
+    image: postgres:15
+    environment:
+      POSTGRES_USER: ${USER_DB_USER}
+      POSTGRES_PASSWORD: ${USER_DB_PASSWORD}
+      POSTGRES_DB: ${USER_DB_NAME}
+    ports: ["5435:5432"]
+    volumes: [user_pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${USER_DB_USER} -d ${USER_DB_NAME}"]
+    networks: [microservices-network]
+
+  # --- Cache ---
   redis:
     image: redis:7.0-alpine
-    container_name: redis
-    restart: always
-    ports:
-      - "6379:6379"
     command: redis-server --save 60 1 --loglevel warning
-    volumes:
-      - redis_data:/data
+    ports: ["6379:6379"]
+    volumes: [redis_data:/data]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-    networks:
-      - microservices-network
+    networks: [microservices-network]
 
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
-    container_name: elasticsearch
+  # --- Servicios ---
+  auth-service:
+    build: ./auth-service
     environment:
-      - discovery.type=single-node
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    ports:
-      - "9200:9200"
-    volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+      REDIS_HOST: redis
+    ports: ["50053:50053"]
+    depends_on:
+      redis: {condition: service_healthy}
+    networks: [microservices-network]
+
+  user-service:  
+    build: ./user-service
+    environment:
+      DB_HOST: user-db
+      DB_PORT: 5432
+      DB_USER: ${USER_DB_USER}
+      DB_PASSWORD: ${USER_DB_PASSWORD}
+      DB_NAME: ${USER_DB_NAME}
+      AUTH_SERVICE_URL: auth-service:50053  
+    ports: ["50054:50054"]  
+    depends_on:
+      user-db: {condition: service_healthy}
+      auth-service: {condition: service_healthy}
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
-    networks:
-      - microservices-network
+      test: ["CMD", "grpc_health_probe", "-addr=:50054"]
+    networks: [microservices-network]
 
   api-gateway:
     image: nginx:alpine
-    container_name: api_gateway
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    ports:
+      - ./api-gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./api-gateway/certs:/etc/nginx/certs:ro  
+    ports: 
       - "80:80"
+      - "443:443"  
     depends_on:
-      warehouse-service:
-        condition: service_healthy
-      checkout-service:
-        condition: service_healthy
-    networks:
-      - microservices-network
+      auth-service: {condition: service_healthy}
+      user-service: {condition: service_healthy}  
+    networks: [microservices-network]
 
   warehouse-service:
     build: ./warehouse-service
-    container_name: warehouse_service
     environment:
       DB_HOST: warehouse-db
       DB_PORT: 5432
+      DB_USER: ${WAREHOUSE_DB_USER}
+      DB_PASSWORD: ${WAREHOUSE_DB_PASSWORD}
+      DB_NAME: ${WAREHOUSE_DB_NAME}
       REDIS_HOST: redis
-      ELASTICSEARCH_HOST: elasticsearch
+      AUTH_SERVICE_URL: auth-service:50053
+      USER_SERVICE_URL: user-service:50054 
       GRPC_PORT: 50051
+    ports: ["50051:50051"]
     depends_on:
-      warehouse-db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      elasticsearch:
-        condition: service_healthy
-    ports:
-      - "50051:50051"
-    healthcheck:
-      test: ["CMD", "grpc_health_probe", "-addr=:50051"]
-      interval: 10s
-      timeout: 2s
-    networks:
-      - microservices-network
+      warehouse-db: {condition: service_healthy}
+      auth-service: {condition: service_healthy}
+      user-service: {condition: service_healthy}  
+    networks: [microservices-network]
 
   checkout-service:
     build: ./checkout-service
-    container_name: checkout_service
     environment:
       DB_HOST: checkout-db
       DB_PORT: 5432
+      DB_USER: ${CHECKOUT_DB_USER}
+      DB_PASSWORD: ${CHECKOUT_DB_PASSWORD}
+      DB_NAME: ${CHECKOUT_DB_NAME}
       REDIS_HOST: redis
       WAREHOUSE_SERVICE_URL: warehouse-service:50051
+      AUTH_SERVICE_URL: auth-service:50053
+      USER_SERVICE_URL: user-service:50054  
       GRPC_PORT: 50052
+    ports: ["50052:50052"]
     depends_on:
-      checkout-db:
-        condition: service_healthy
-      warehouse-service:
-        condition: service_healthy
-    ports:
-      - "50052:50052"
-    healthcheck:
-      test: ["CMD", "grpc_health_probe", "-addr=:50052"]
-      interval: 10s
-      timeout: 2s
-    networks:
-      - microservices-network
+      checkout-db: {condition: service_healthy}
+      warehouse-service: {condition: service_healthy}
+      auth-service: {condition: service_healthy}
+      user-service: {condition: service_healthy}
+    networks: [microservices-network]
 
 volumes:
   warehouse_pgdata:
   checkout_pgdata:
+  user_pgdata:  
   redis_data:
-  elasticsearch_data:
 
 networks:
   microservices-network:
