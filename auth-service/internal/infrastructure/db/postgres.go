@@ -3,7 +3,7 @@ package db
 import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"github.com/ramiroschettino/go-store-microservice/auth-service/internal/domain" 
+	"auth-service/internal/domain" 
 )
 
 func NewPostgresDB(dsn string) (*gorm.DB, error) {

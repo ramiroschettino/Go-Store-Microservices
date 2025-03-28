@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"gorm.io/gorm"
-	"github.com/ramiroschettino/Go-Store-Microservices/warehouse-service/internal/domain"
+	"warehouse-service/internal/domain"
 )
 
 type StockMovementRepositoryImpl struct {

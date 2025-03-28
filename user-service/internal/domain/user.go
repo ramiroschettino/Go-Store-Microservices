@@ -10,9 +10,3 @@ type User struct {
 	CreatedAt time.Time `gorm:"autoCreateTime"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime"`
 }
-
-type UserRepository interface {
-	Create(user *User) error
-	FindByID(id string) (*User, error)
-	FindByEmail(email string) (*User, error)
-}

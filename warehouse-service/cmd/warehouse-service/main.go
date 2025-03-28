@@ -3,12 +3,12 @@ package main
 import (
 	"log"
 	
-	"github.com/ramiroschettino/Go-Store-Microservices/warehouse-service/internal/application"
-	"github.com/ramiroschettino/Go-Store-Microservices/warehouse-service/internal/infrastructure/cache"
-	"github.com/ramiroschettino/Go-Store-Microservices/warehouse-service/internal/infrastructure/db"
-	"github.com/ramiroschettino/Go-Store-Microservices/warehouse-service/internal/infrastructure/grpc"
-	"github.com/ramiroschettino/Go-Store-Microservices/warehouse-service/internal/infrastructure/repository"
-	"github.com/ramiroschettino/Go-Store-Microservices/warehouse-service/internal/infrastructure/search"
+	"warehouse-service/internal/application"
+	"warehouse-service/internal/infrastructure/cache"
+	"warehouse-service/internal/infrastructure/db"
+	"warehouse-service/internal/infrastructure/grpc"
+	"warehouse-service/internal/infrastructure/repository"
+	"warehouse-service/internal/infrastructure/search"
 )
 
 func main() {

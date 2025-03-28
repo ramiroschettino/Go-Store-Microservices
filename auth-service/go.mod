@@ -1,10 +1,9 @@
-module github.com/ramiroschettino/Go-Store-Microservices/auth-service
+module auth-service
 
 go 1.23.6
 
 require (
 	github.com/golang-jwt/jwt/v5 v5.2.2
-	github.com/golang/mock v1.6.0
 	golang.org/x/crypto v0.36.0
 	google.golang.org/grpc v1.71.0
 	google.golang.org/protobuf v1.36.6
@@ -19,7 +18,6 @@ require (
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
-	github.com/stretchr/testify v1.10.0 // indirect
 	golang.org/x/net v0.34.0 // indirect
 	golang.org/x/sync v0.12.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect

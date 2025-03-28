@@ -156,7 +156,4 @@ C:.
     |       \---search
     |               elastic.go
     |               
-    \---pkg
-        \---warehouse
-                .gitkeep
                 

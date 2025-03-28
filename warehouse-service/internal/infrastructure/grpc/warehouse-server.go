@@ -7,8 +7,8 @@ import (
 	"net"
 	"time"
 
-	pb "github.com/ramiroschettino/Go-Store-Microservices/warehouse-service/api"
-	"github.com/ramiroschettino/Go-Store-Microservices/warehouse-service/internal/application"
+	pb "warehouse-service/api"
+	"warehouse-service/internal/application"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
