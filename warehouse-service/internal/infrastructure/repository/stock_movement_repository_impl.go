@@ -2,8 +2,10 @@ package repository
 
 import (
 	"context"
+
+	"github.com/ramiroschettino/Go-Store-Microservices/warehouse-service/internal/domain"
+
 	"gorm.io/gorm"
-	"warehouse-service/internal/domain"
 )
 
 type StockMovementRepositoryImpl struct {
@@ -32,7 +34,7 @@ func (r *StockMovementRepositoryImpl) Create(ctx context.Context, movement *doma
 		if err := tx.Create(movement).Error; err != nil {
 			return err
 		}
-		
+
 		// 2. Actualizar el stock del producto
 		return tx.Model(&domain.Product{}).
 			Where("id = ?", movement.ProductID).

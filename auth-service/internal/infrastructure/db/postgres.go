@@ -1,9 +1,9 @@
 package db
 
 import (
+	"github.com/ramiroschettino/Go-Store-Microservices/auth-service/internal/domain"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"auth-service/internal/domain" 
 )
 
 func NewPostgresDB(dsn string) (*gorm.DB, error) {

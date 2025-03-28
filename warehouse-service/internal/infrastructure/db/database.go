@@ -1,8 +1,11 @@
 package db
 
 import (
-	"context"
 	"fmt"
+	"os"
+
+	"github.com/ramiroschettino/Go-Store-Microservices/warehouse-service/internal/domain"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -16,7 +19,7 @@ func NewPostgresDB() (*gorm.DB, error) {
 		os.Getenv("DB_NAME"),
 		os.Getenv("DB_PORT"),
 	)
-	
+
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
@@ -28,6 +31,6 @@ func NewPostgresDB() (*gorm.DB, error) {
 		&domain.StockMovement{},
 		&domain.Warehouse{},
 	)
-	
+
 	return db, err
 }

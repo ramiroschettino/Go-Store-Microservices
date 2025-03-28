@@ -1,19 +1,31 @@
-FROM golang:1.23-alpine
+FROM golang:1.23-alpine AS builder
 
 # Establecer el directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copiar go.mod y go.sum primero para aprovechar el cache
+# 1. Copiar archivos de módulo primero
 COPY go.mod go.sum ./
 
-# Descargar las dependencias
-RUN go mod tidy
+# 2. Descargar dependencias
+RUN go mod download
 
-# Copiar todo el contenido de tu proyecto local al contenedor
+# 3. Copiar el código fuente
 COPY . .
 
-# Compilar el binario de tu aplicación
+# 4. Solución clave: Configurar el replace para checkout-service
+# Esto asume que checkout-service está en el mismo nivel que warehouse-service
+RUN go mod edit -replace github.com/ramiroschettino/Go-Store-Microservices/checkout-service=/go/pkg/mod/github.com/ramiroschettino/Go-Store-Microservices/checkout-service@v0.0.0
+
+# 5. Compilar la aplicación
 RUN go build -o warehouse-service ./cmd/warehouse-service
+
+# --- Etapa de ejecución ---
+FROM alpine:latest
+
+WORKDIR /app
+
+# Copiar el binario compilado
+COPY --from=builder /app/warehouse-service .
 
 # Exponer el puerto necesario
 EXPOSE 50051

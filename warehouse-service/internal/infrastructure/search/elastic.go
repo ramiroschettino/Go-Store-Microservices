@@ -2,27 +2,24 @@ package search
 
 import (
 	"context"
-	
-	"github.com/elastic/go-elasticsearch/v8"
+
+	"github.com/ramiroschettino/Go-Store-Microservices/warehouse-service/internal/domain"
 )
 
-type ElasticSearch struct {
-	client *elasticsearch.Client
+type ElasticSearchService struct {
+	// Aquí puedes definir la conexión a Elasticsearch
 }
 
-func NewElasticSearch(addr string) (*ElasticSearch, error) {
-	cfg := elasticsearch.Config{
-		Addresses: []string{addr},
-	}
-	
-	client, err := elasticsearch.NewClient(cfg)
-	if err != nil {
-		return nil, err
-	}
-	
-	return &ElasticSearch{client: client}, nil
+func NewElasticSearchService() *ElasticSearchService {
+	return &ElasticSearchService{}
 }
 
-func (e *ElasticSearch) IndexProduct(ctx context.Context, product domain.Product) error {
-	// Implementar indexación
+func (e *ElasticSearchService) IndexProduct(ctx context.Context, product domain.Product) error {
+	// Lógica para indexar en Elasticsearch
+	return nil
+}
+
+func (e *ElasticSearchService) SearchProducts(ctx context.Context, query string) ([]domain.Product, error) {
+	// Lógica para buscar productos en Elasticsearch
+	return nil, nil
 }

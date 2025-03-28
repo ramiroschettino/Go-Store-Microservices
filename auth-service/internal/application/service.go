@@ -1,8 +1,9 @@
 package application
 
 import (
-	"auth-service/internal/domain"
 	"errors"
+
+	"github.com/ramiroschettino/Go-Store-Microservices/auth-service/internal/domain"
 )
 
 type AuthService struct {

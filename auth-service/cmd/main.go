@@ -1,11 +1,12 @@
 package main
 
 import (
-	"auth-service/internal/application"
-	"auth-service/internal/infrastructure/db"
-	"auth-service/internal/infrastructure/repository"
 	"log"
 	"os"
+
+	"github.com/ramiroschettino/Go-Store-Microservices/auth-service/internal/application"
+	"github.com/ramiroschettino/Go-Store-Microservices/auth-service/internal/infrastructure/db"
+	"github.com/ramiroschettino/Go-Store-Microservices/auth-service/internal/infrastructure/repository"
 )
 
 func main() {

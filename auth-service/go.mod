@@ -1,4 +1,4 @@
-module auth-service
+module github.com/ramiroschettino/Go-Store-Microservices/auth-service
 
 go 1.23.6
 

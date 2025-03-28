@@ -3,8 +3,9 @@ package repository
 import (
 	"context"
 	"errors"
+
+	"github.com/ramiroschettino/Go-Store-Microservices/warehouse-service/internal/domain"
 	"gorm.io/gorm"
-	"warehouse-service/internal/domain"
 )
 
 type WarehouseRepositoryImpl struct {

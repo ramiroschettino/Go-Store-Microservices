@@ -2,8 +2,9 @@ package repository
 
 import (
 	"time"
-	"auth-service/internal/domain"
+
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/ramiroschettino/Go-Store-Microservices/auth-service/internal/domain"
 )
 
 type JWTRepository struct {

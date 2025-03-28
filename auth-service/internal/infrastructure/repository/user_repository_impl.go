@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"auth-service/internal/domain"
+	"github.com/ramiroschettino/Go-Store-Microservices/auth-service/internal/domain"
 	"gorm.io/gorm"
 )
 

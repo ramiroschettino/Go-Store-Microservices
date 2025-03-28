@@ -7,8 +7,8 @@ import (
 	"net"
 	"time"
 
-	pb "warehouse-service/api"
-	"warehouse-service/internal/application"
+	pb "github.com/ramiroschettino/Go-Store-Microservices/warehouse-service/api"
+	"github.com/ramiroschettino/Go-Store-Microservices/warehouse-service/internal/application"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -106,12 +106,12 @@ func loggingInterceptor(
 	start := time.Now()
 
 	log.Printf("Iniciando llamada: %s", info.FullMethod)
-	
+
 	resp, err = handler(ctx, req)
-	
-	log.Printf("Llamada completada: %s, Duración: %v, Error: %v", 
-		info.FullMethod, 
-		time.Since(start), 
+
+	log.Printf("Llamada completada: %s, Duración: %v, Error: %v",
+		info.FullMethod,
+		time.Since(start),
 		err)
 
 	return resp, err
