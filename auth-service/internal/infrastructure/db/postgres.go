@@ -3,6 +3,7 @@ package db
 import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"github.com/ramiroschettino/go-store-microservice/auth-service/internal/domain" 
 )
 
 func NewPostgresDB(dsn string) (*gorm.DB, error) {
@@ -11,7 +12,6 @@ func NewPostgresDB(dsn string) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	// AutoMigrate modelos
 	if err := db.AutoMigrate(&domain.User{}); err != nil {
 		return nil, err
 	}
